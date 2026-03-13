@@ -157,11 +157,13 @@ claims.roles.exists(r, r == "admin")
 ### ContextClaims
 
 - **Environment variable**: `CONTEXT_CLAIMS`
-- **Description**: A comma-separated list of JWT claim names to copy into the authorizer context as top-level string values.
-- **Mandatory**: No
-- **Default value**: `"sub,preferred_username"`
+- **Description**: A comma-separated list of JWT claim names to copy into the authorizer context.  These claims will be available as `$context.authorizer.claims.property.<claim_name>`. Only claims that are present and non-null in the token will be copied. If left empty, no claims will be copied to the context.
 
-Only configured claims are exposed as top-level context fields. The full token payload is always available via `jwtClaims`.
+This is intended to all allow API Gateway REST APIs to mimic the `$context.authorizer.claims.<claim_name>` behavior of HTTP APIs that is described at https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging-variables.html
+- **Mandatory**: No
+- **Default value**: `""` (no claims copied)
+
+Only configured claims are exposed. The full token payload is always available via `jwtClaims`.
 
 ### AwsLambdaLogLevel
 
