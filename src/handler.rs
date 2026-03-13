@@ -19,6 +19,7 @@ pub struct Handler {
     pub accepted_audiences: &'static AcceptedClaims,
     pub accepted_signing_algorithms: &'static AcceptedAlgorithms,
     pub cel_validator: &'static CelValidator,
+    pub context_claims: &'static Vec<String>,
 }
 
 impl Handler {
@@ -29,6 +30,7 @@ impl Handler {
         accepted_audiences: &'static AcceptedClaims,
         accepted_signing_algorithms: &'static AcceptedAlgorithms,
         cel_validator: &'static CelValidator,
+        context_claims: &'static Vec<String>,
     ) -> Self {
         Self {
             keys,
@@ -37,6 +39,7 @@ impl Handler {
             accepted_audiences,
             accepted_signing_algorithms,
             cel_validator,
+            context_claims,
         }
     }
 
@@ -118,6 +121,7 @@ impl Handler {
         Ok(TokenAuthorizerResponse::allow(
             &principal_id,
             &token_payload.claims,
+            self.context_claims,
         ))
     }
 }
@@ -131,6 +135,7 @@ impl Clone for Handler {
             accepted_audiences: self.accepted_audiences,
             accepted_signing_algorithms: self.accepted_signing_algorithms,
             cel_validator: self.cel_validator,
+            context_claims: self.context_claims,
         }
     }
 }
@@ -180,6 +185,7 @@ mod tests {
         )));
         let accepted_signing_algorithms = Box::leak(Box::default());
         let cel_validator = Box::leak(Box::default());
+        let context_claims = Box::leak(Box::new(vec!["email".to_string()]));
 
         Handler::new(
             key_storage,
@@ -188,6 +194,7 @@ mod tests {
             accepted_audiences,
             accepted_signing_algorithms,
             cel_validator,
+            context_claims,
         )
     }
 
@@ -231,6 +238,7 @@ mod tests {
             AcceptedClaims::from_comma_separated_values(aud, "aud".to_string());
         let accepted_signing_algorithms: AcceptedAlgorithms = Default::default();
         let cel_validator: CelValidator = Default::default();
+        let context_claims = vec!["email".to_string()];
         let keys = KeysStorage::new(Url::parse(&jwks_uri).unwrap(), min_refresh_rate);
         let mut handler = Handler::new(
             Box::leak(Box::new(keys)),
@@ -239,6 +247,7 @@ mod tests {
             Box::leak(Box::new(accepted_audiences)),
             Box::leak(Box::new(accepted_signing_algorithms)),
             Box::leak(Box::new(cel_validator)),
+            Box::leak(Box::new(context_claims)),
         );
 
         // creates the event

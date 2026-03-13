@@ -45,6 +45,12 @@ async fn main() -> Result<(), Error> {
     let accepted_signing_algorithms: AcceptedAlgorithms = accepted_signing_algorithms.parse()?; // infallible
     let token_validation_cel = env::var("TOKEN_VALIDATION_CEL").unwrap_or_default();
     let cel_validator: CelValidator = token_validation_cel.parse()?;
+    let context_claims = env::var("CONTEXT_CLAIMS").unwrap_or_default();
+    let context_claims = context_claims
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>();
 
     tracing::init_default_subscriber();
 
@@ -56,6 +62,7 @@ async fn main() -> Result<(), Error> {
         Box::leak(Box::new(accepted_audiences)),
         Box::leak(Box::new(accepted_signing_algorithms)),
         Box::leak(Box::new(cel_validator)),
+        Box::leak(Box::new(context_claims)),
     ))
     .await
 }

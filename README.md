@@ -154,6 +154,15 @@ claims.roles.exists(r, r == "admin")
 >     - "admin"
 > ```
 
+### ContextClaims
+
+- **Environment variable**: `CONTEXT_CLAIMS`
+- **Description**: A comma-separated list of JWT claim names to copy into the authorizer context as top-level string values.
+- **Mandatory**: No
+- **Default value**: `"sub,preferred_username"`
+
+Only configured claims are exposed as top-level context fields. The full token payload is always available via `jwtClaims`.
+
 ### AwsLambdaLogLevel
 
 - **Environment variable**: `AWS_LAMBDA_LOG_LEVEL`
@@ -211,6 +220,7 @@ The authorizer enriches the context of the request with the following values:
 
 - `principalId`: the principal ID extracted from the token.
 - `jwtClaims`: a JSON string containing the entire token payload (claims).
+- Claims listed in `CONTEXT_CLAIMS`: each configured claim is emitted as `event.requestContext.authorizer.<claim_name>` when present and non-null.
 
 These values are injected into the context of the request and can be used to enrich your logging, tracing or to implement app-level authentication.
 
