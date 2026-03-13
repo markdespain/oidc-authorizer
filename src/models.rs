@@ -61,9 +61,13 @@ impl TokenAuthorizerResponse {
             serde_json::to_string(token_claims).unwrap(),
         );
 
+        // For API Gateway REST APIs, mimic support for $context.authorizer.claims.property
+        // that API Gateway provides for HTTP APIs
+        //
+        // See https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging-variables.html
         for claim_name in context_claims {
             if let Some(claim_value) = claim_as_string(token_claims, claim_name) {
-                context.insert(claim_name.to_string(), claim_value);
+                context.insert(format!("claims.{}", claim_name), claim_value);
             }
         }
 
@@ -123,7 +127,7 @@ mod tests {
             "Allow"
         );
         assert_eq!(
-            response.context.get("email"),
+            response.context.get("claims.email"),
             Some(&"john.doe@example.com".to_string())
         );
         let embedded_claims =
@@ -142,7 +146,7 @@ mod tests {
         let response = TokenAuthorizerResponse::allow(principal_id, &token_claims, &context_claims);
 
         assert_eq!(
-            response.context.get("email"),
+            response.context.get("claims.email"),
             Some(&"john.doe@example.com".to_string())
         );
     }
@@ -158,10 +162,10 @@ mod tests {
         let response = TokenAuthorizerResponse::allow(principal_id, &token_claims, &context_claims);
 
         assert_eq!(
-            response.context.get("email"),
+            response.context.get("claims.email"),
             Some(&"john.doe@example.com".to_string())
         );
-        assert!(!response.context.contains_key("name"));
+        assert!(!response.context.contains_key("claims.name"));
     }
 
     #[test]
